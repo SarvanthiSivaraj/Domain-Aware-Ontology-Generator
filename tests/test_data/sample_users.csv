@@ -1,0 +1,6 @@
+user_id,user_name,user_email,user_role,login_ip,device_id
+U001,John Doe,john.doe@company.com,Admin,192.168.1.100,D001
+U002,Jane Smith,jane.smith@company.com,User,192.168.1.101,D002
+U003,Bob Wilson,bob.wilson@company.com,Analyst,10.0.0.50,D003
+U004,Alice Brown,alice.brown@company.com,Manager,192.168.1.102,D004
+U005,Charlie Davis,charlie.davis@company.com,User,10.0.0.51,D005

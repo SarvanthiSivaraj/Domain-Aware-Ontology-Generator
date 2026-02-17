@@ -1,0 +1,16 @@
+# Core Dependencies for OWL Ontology Generation
+owlready2>=0.45
+rdflib>=7.0.0
+pandas>=2.0.0
+
+# Additional utilities
+openpyxl>=3.1.0  # For Excel support (optional)
+chardet>=5.0.0   # For better encoding detection
+
+# Development and Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# Code Quality (optional but recommended)
+black>=23.0.0
+flake8>=6.0.0
