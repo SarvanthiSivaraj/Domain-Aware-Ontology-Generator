@@ -5,4 +5,30 @@ This project proposes a Domain-Aware OWL Ontology Generation Framework that auto
 
 By incorporating domain awareness, the framework enhances the accuracy and consistency of ontology construction while significantly reducing human intervention. The generated OWL files are compatible with standard semantic web tools, supporting efficient knowledge representation, reasoning, and interoperability across systems.
 
-The proposed framework is designed to be lightweight, scalable, and extensible, enabling future enhancements such as multi-domain support and intelligent relationship prediction. Ultimately, the system aims to simplify ontology engineering, accelerate semantic modeling, and improve the analysis of cybersecurity data.
+
+---
+## Workflow Summary
+
+```
+User Input
+    ↓
+File Validation
+    ↓
+Format Detection
+    ↓
+Data Parsing
+    ↓
+Schema Extraction
+    ↓
+Domain-Aware Semantic Analysis
+    ↓
+Entity Identification
+    ↓
+Attribute Classification
+    ↓
+Relationship Detection
+    ↓
+Ontology Construction
+    ↓
+OWL File Generation
+```
