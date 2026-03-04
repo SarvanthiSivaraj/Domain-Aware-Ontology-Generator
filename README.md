@@ -60,7 +60,7 @@ The system automatically detects file format and parses the data:
 ### 3.3 Schema Extraction
 The schema extractor identifies:
 - Field names
-- Identifier patterns (e.g., _id)
+- Identifier patterns (e.g., `_id`)
 - Repeated prefixes
 - Nested attributes
 - Data types
@@ -174,7 +174,7 @@ python tests/demo_parsing.py
 
 Provide the path to a JSON or CSV file when prompted.
 
-The generated ontology file will be saved in the output/ directory.
+The generated ontology file will be saved in the `output/` directory.
 
 ---
 
