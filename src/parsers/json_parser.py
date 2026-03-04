@@ -8,9 +8,7 @@ import json
 from typing import Dict, Any, List, Set
 from collections import defaultdict
 from src.parsers.base_parser import BaseParser
-from src.core.parsed_data import ParsedData, FieldMetadata
-from src.utils.type_detector import DataType
-from src.analyzers.schema_analyzer import SchemaAnalyzer
+from src.core.parsed_data import ParsedData
 
 
 class JSONParser(BaseParser):
@@ -48,17 +46,7 @@ class JSONParser(BaseParser):
         # Extract records and hierarchy
         records = self._extract_records(raw_data)
         parsed_data.set_records(records)
-        
-        # Detect schema using the new analyzer
-        analyzer = SchemaAnalyzer()
-        schema_result = analyzer.analyze(records)
-        
-        parsed_data.set_field_metadata(schema_result['field_metadata'])
-        
-        # Merge hierarchy: combination of physical JSON nesting and prefix-based logic
-        merged_hierarchy = self.hierarchy_map.copy()
-        merged_hierarchy.update(schema_result['hierarchy'])
-        parsed_data.set_hierarchy(merged_hierarchy)
+        parsed_data.set_hierarchy(self.hierarchy_map)
         
         return parsed_data
     

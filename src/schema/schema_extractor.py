@@ -11,8 +11,9 @@ import re
 from src.core.parsed_data import FieldMetadata
 from src.utils.type_detector import analyze_field_types, DataType
 
-class SchemaAnalyzer:
+class SchemaExtractor:
     """
+    Step 4: Schema Extractor
     Analyzes the structural schema of flat or flattened datasets.
     
     Provides:

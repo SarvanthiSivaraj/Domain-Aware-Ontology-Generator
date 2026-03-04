@@ -8,10 +8,7 @@ import csv
 import pandas as pd
 from typing import Dict, Any, List
 from src.parsers.base_parser import BaseParser
-from src.core.parsed_data import ParsedData, FieldMetadata
-from src.utils.type_detector import DataType
-from src.analyzers.schema_analyzer import SchemaAnalyzer
-
+from src.core.parsed_data import ParsedData
 
 class CSVParser(BaseParser):
     """
@@ -47,12 +44,6 @@ class CSVParser(BaseParser):
         # Convert DataFrame to list of dictionaries
         records = df.to_dict('records')
         parsed_data.set_records(records)
-        
-        # Detect schema using the new analyzer
-        analyzer = SchemaAnalyzer()
-        schema_result = analyzer.analyze(records)
-        
-        parsed_data.set_field_metadata(schema_result['field_metadata'])
         
         return parsed_data
     
