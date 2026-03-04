@@ -6,6 +6,7 @@ from src.parsers.parser_factory import create_parser
 from src.schema.schema_extractor import SchemaExtractor
 from src.domain.domain_detector import DomainDetector
 from src.domain.domain_loader import DomainLoader
+from src.analyzers.entity_identifier import EntityIdentifier
 
 def run_pipeline(file_path: str):
     print(f"\n--- Phase 1: Core Foundation ---")
@@ -66,11 +67,19 @@ def run_pipeline(file_path: str):
     print(f"[6/12] Loading domain knowledge...")
     loader = DomainLoader()
     domain_config = loader.load(domain)
-    
     print(f"✅ Loaded DomainConfig for: {domain_config.name}")
-    print(f"✅ Mapping Rules: {len(domain_config.mappings)} entities mapped.")
+
+    print(f"\n--- Phase 4: Semantic Inference ---")
+    # Step 7: Entity Identification
+    print(f"[7/12] Identifying entities...")
+    identifier = EntityIdentifier(domain_config)
+    entities = identifier.identify(parsed_data)
     
-    return parsed_data, domain, domain_config
+    for ent_name, info in entities.items():
+        anchor = info['anchor_field'] or "None"
+        print(f"✅ Identified Entity: {ent_name} (Anchor: {anchor}, Match: {info['confidence']*100:.0f}%)")
+    
+    return parsed_data, domain_config, entities
 
 def main():
     parser = argparse.ArgumentParser(description="Multi-Domain Aware OWL Ontology Generator")
@@ -79,11 +88,11 @@ def main():
     
     result = run_pipeline(args.input)
     if result:
-        parsed_data, domain, domain_config = result
+        parsed_data, domain_config, entities = result
         print(f"\n{parsed_data.summary()}")
         print(f"\nActive Domain: {domain_config.name}")
-        print(f"Entities in Scope: {', '.join(domain_config.entities)}")
-        print("\nPhase 3 Complete! Ready for Step 7 (Entity Identification).")
+        print(f"Identified Entities: {', '.join(entities.keys())}")
+        print("\nPhase 4 (Step 7) Complete! Ready for Step 8 (Attribute Classification).")
 
 if __name__ == "__main__":
     main()
