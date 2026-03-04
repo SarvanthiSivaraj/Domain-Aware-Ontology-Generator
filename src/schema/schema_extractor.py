@@ -1,6 +1,5 @@
 """
-Schema Analyzer Module
-
+Step 4: Schema Analyzer Module
 Analyzes the structural patterns of parsed data, including identifier detection,
 naming convention analysis, and prefix recognition.
 """
@@ -11,15 +10,17 @@ import re
 from src.core.parsed_data import FieldMetadata
 from src.utils.type_detector import analyze_field_types, DataType
 
+class SchemaMetadata:
+    """Formal outcome object for Step 4."""
+    def __init__(self, field_metadata: Dict[str, FieldMetadata], hierarchy: Dict[str, List[str]]):
+        self.field_metadata = field_metadata
+        self.hierarchy = hierarchy
+        self.fields = list(field_metadata.keys())
+
 class SchemaExtractor:
     """
     Step 4: Schema Extractor
     Analyzes the structural schema of flat or flattened datasets.
-    
-    Provides:
-    - ID/Identifier detection
-    - Prefix-based grouping logic
-    - Data type integration
     """
 
     ID_PATTERNS = [
@@ -36,80 +37,63 @@ class SchemaExtractor:
         """Initialize the SchemaAnalyzer"""
         pass
 
-    def analyze(self, records: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def analyze(self, records: List[Dict[str, Any]]) -> SchemaMetadata:
         """
-        Perform a comprehensive schema analysis on a list of records.
-        
-        Args:
-            records: List of record dictionaries
-            
-        Returns:
-            dict: result containing 'field_metadata' and 'hierarchy'
+        Runs comprehensive schema analysis on records.
         """
         if not records:
-            return {'field_metadata': {}, 'hierarchy': {}}
-
-        # 1. Detect data types using the existing utility
+            return SchemaMetadata({}, {})
+            
+        # 1. Detect field names and types using the utility
         field_types = analyze_field_types(records)
         all_fields = list(field_types.keys())
-
-        # 2. Detect common prefixes
-        prefixes = self.detect_prefixes(all_fields)
-
-        # 3. Detect identifiers
+            
+        # 2. Detect identifiers and prefixes
         id_fields = self.detect_identifiers(all_fields)
-
-        # 4. Create field metadata
+        prefix_list = self.detect_prefixes(all_fields)
+        
         field_metadata = {}
         hierarchy = {}
-
-        for field_name in all_fields:
-            # Collect values for statistics
-            values = [record.get(field_name) for record in records]
-            non_null_values = [v for v in values if v is not None]
-            
-            # Determine prefix
+        
+        for field in all_fields:
+            # Analyze prefix
             detected_prefix = None
-            for p in prefixes:
-                if field_name.startswith(p) and field_name != p[:-1]: # Don't match the prefix itself if it's a field
-                    detected_prefix = p[:-1] # Remove the trailing underscore for the metadata
+            for p in prefix_list:
+                if field.startswith(p) and field != p[:-1]:
+                    detected_prefix = p[:-1]
                     break
             
-            # Update hierarchy mapping (group by prefix)
+            # Update hierarchy mapping
             if detected_prefix:
                 if detected_prefix not in hierarchy:
                     hierarchy[detected_prefix] = []
-                if field_name not in hierarchy[detected_prefix]:
-                    hierarchy[detected_prefix].append(field_name)
+                hierarchy[detected_prefix].append(field)
 
-            # Create the metadata object
+            # Collect non-null values for samples and stats
+            values = [record.get(field) for record in records if field in record]
+            non_null_values = [v for v in values if v is not None]
+
+            # Create the metadata object correctly
+            # name and data_type are required positional arguments
+            dt = field_types.get(field, DataType.UNKNOWN).value
+            
             metadata = FieldMetadata(
-                name=field_name,
-                data_type=field_types.get(field_name, DataType.UNKNOWN).value,
-                nullable=(len(non_null_values) < len(values)),
-                null_count=len(values) - len(non_null_values),
+                name=field,
+                data_type=dt,
+                nullable=(len(non_null_values) < len(records)),
+                null_count=len(records) - len(non_null_values),
                 unique_count=len(set(str(v) for v in non_null_values)) if non_null_values else 0,
-                is_identifier=(field_name in id_fields),
+                is_identifier=(field in id_fields),
                 prefix=detected_prefix,
                 sample_values=list(set(non_null_values))[:5]
             )
-            field_metadata[field_name] = metadata
+            
+            field_metadata[field] = metadata
 
-        return {
-            'field_metadata': field_metadata,
-            'hierarchy': hierarchy
-        }
+        return SchemaMetadata(field_metadata, hierarchy)
 
     def detect_identifiers(self, field_names: List[str]) -> Set[str]:
-        """
-        Identify fields that are likely primary or foreign keys.
-        
-        Args:
-            field_names: List of field names to check
-            
-        Returns:
-            Set[str]: Fields identified as IDs
-        """
+        """Identify fields that are likely primary or foreign keys."""
         id_fields = set()
         for name in field_names:
             lower_name = name.lower()
@@ -120,27 +104,12 @@ class SchemaExtractor:
         return id_fields
 
     def detect_prefixes(self, field_names: List[str], min_overlap: int = 2) -> List[str]:
-        """
-        Detect repeated prefixes across field names.
-        Example: ['user_id', 'user_name'] -> 'user_'
-        
-        Args:
-            field_names: List of field names
-            min_overlap: Minimum number of fields that must share the prefix
-            
-        Returns:
-            List[str]: Detected prefixes (with trailing underscore) sorted by length descending
-        """
+        """Detect repeated prefixes across field names."""
         prefixes = Counter()
-        
         for name in field_names:
             if '_' in name:
                 parts = name.split('_')
-                # Try compound prefixes: e.g. "network_activities_"
                 for i in range(1, len(parts)):
                     candidate = "_".join(parts[:i]) + "_"
                     prefixes[candidate] += 1
-        
-        # Filter by overlap and return longest matches first
-        detected = [p for p, count in prefixes.items() if count >= min_overlap]
-        return sorted(detected, key=len, reverse=True)
+        return sorted([p for p, count in prefixes.items() if count >= min_overlap], key=len, reverse=True)

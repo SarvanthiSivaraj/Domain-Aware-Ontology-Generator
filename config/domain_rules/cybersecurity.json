@@ -26,5 +26,23 @@
         "Alert",
         "NetworkActivity",
         "LogEntry"
-    ]
+    ],
+    "mappings": {
+        "User": [
+            "user_id",
+            "user_name",
+            "user_role",
+            "user_email"
+        ],
+        "Device": [
+            "device_id",
+            "login_ip",
+            "mac_address"
+        ],
+        "LogEntry": [
+            "timestamp",
+            "event_id",
+            "log_msg"
+        ]
+    }
 }

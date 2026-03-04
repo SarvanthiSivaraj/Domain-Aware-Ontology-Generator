@@ -26,5 +26,22 @@
         "MedicalRecord",
         "Condition",
         "Treatment"
-    ]
+    ],
+    "mappings": {
+        "Patient": [
+            "patient_id",
+            "patient_name",
+            "bmi",
+            "glucose"
+        ],
+        "MedicalRecord": [
+            "record_id",
+            "diagnosis",
+            "timestamp"
+        ],
+        "Doctor": [
+            "doctor_id",
+            "specialty"
+        ]
+    }
 }

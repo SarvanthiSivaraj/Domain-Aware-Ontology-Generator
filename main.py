@@ -12,9 +12,9 @@ def run_pipeline(file_path: str):
     
     # Step 1: File Validation
     print(f"[1/12] Validating file: {file_path}")
-    is_valid, errors = FileValidator.validate(file_path)
-    if not is_valid:
-        print(f"❌ Validation failed: {errors}")
+    validation_result = FileValidator.validate(file_path)
+    if not validation_result.is_valid:
+        print(f"❌ Validation failed: {validation_result.errors}")
         return None
     
     # Step 2: Format Detection
@@ -47,13 +47,13 @@ def run_pipeline(file_path: str):
     extractor = SchemaExtractor()
     schema_result = extractor.analyze(parsed_data.get_records())
     
-    parsed_data.set_field_metadata(schema_result['field_metadata'])
+    parsed_data.set_field_metadata(schema_result.field_metadata)
     # Merge hierarchy
     current_hierarchy = parsed_data.get_hierarchy()
-    current_hierarchy.update(schema_result['hierarchy'])
+    current_hierarchy.update(schema_result.hierarchy)
     parsed_data.set_hierarchy(current_hierarchy)
     
-    print(f"✅ Schema extraction complete. Fields detected: {len(parsed_data.get_fields())}")
+    print(f"✅ Schema extraction complete. Fields detected: {len(schema_result.fields)}")
 
     print(f"\n--- Phase 3: Domain Awareness ---")
     # Step 5: Domain Detection
@@ -67,8 +67,8 @@ def run_pipeline(file_path: str):
     loader = DomainLoader()
     domain_config = loader.load(domain)
     
-    if domain_config:
-        print(f"✅ Loaded {len(domain_config.get('entities', []))} entity rules for {domain}.")
+    print(f"✅ Loaded DomainConfig for: {domain_config.name}")
+    print(f"✅ Mapping Rules: {len(domain_config.mappings)} entities mapped.")
     
     return parsed_data, domain, domain_config
 
@@ -81,8 +81,9 @@ def main():
     if result:
         parsed_data, domain, domain_config = result
         print(f"\n{parsed_data.summary()}")
-        print(f"\nActive Domain: {domain}")
-        print("Phase 3 Complete! Ready for Step 7 (Entity Identification).")
+        print(f"\nActive Domain: {domain_config.name}")
+        print(f"Entities in Scope: {', '.join(domain_config.entities)}")
+        print("\nPhase 3 Complete! Ready for Step 7 (Entity Identification).")
 
 if __name__ == "__main__":
     main()
