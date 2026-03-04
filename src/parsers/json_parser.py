@@ -9,7 +9,8 @@ from typing import Dict, Any, List, Set
 from collections import defaultdict
 from src.parsers.base_parser import BaseParser
 from src.core.parsed_data import ParsedData, FieldMetadata
-from src.utils.type_detector import analyze_field_types, DataType
+from src.utils.type_detector import DataType
+from src.analyzers.schema_analyzer import SchemaAnalyzer
 
 
 class JSONParser(BaseParser):
@@ -48,10 +49,16 @@ class JSONParser(BaseParser):
         records = self._extract_records(raw_data)
         parsed_data.set_records(records)
         
-        # Detect schema
-        schema = self.detect_schema(records)
-        parsed_data.set_field_metadata(schema['field_metadata'])
-        parsed_data.set_hierarchy(schema['hierarchy'])
+        # Detect schema using the new analyzer
+        analyzer = SchemaAnalyzer()
+        schema_result = analyzer.analyze(records)
+        
+        parsed_data.set_field_metadata(schema_result['field_metadata'])
+        
+        # Merge hierarchy: combination of physical JSON nesting and prefix-based logic
+        merged_hierarchy = self.hierarchy_map.copy()
+        merged_hierarchy.update(schema_result['hierarchy'])
+        parsed_data.set_hierarchy(merged_hierarchy)
         
         return parsed_data
     
@@ -192,47 +199,3 @@ class JSONParser(BaseParser):
         
         return flattened
     
-    def detect_schema(self, records: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """
-        Detect schema from parsed records.
-        
-        Args:
-            records: List of record dictionaries
-            
-        Returns:
-            dict: Schema information
-        """
-        if not records:
-            return {'field_metadata': {}, 'hierarchy': {}}
-        
-        # Analyze field types
-        field_types = analyze_field_types(records)
-        
-        # Create field metadata
-        field_metadata = {}
-        all_fields = set()
-        for record in records:
-            all_fields.update(record.keys())
-        
-        for field_name in all_fields:
-            # Collect field values
-            values = [record.get(field_name) for record in records]
-            non_null_values = [v for v in values if v is not None]
-            
-            # Get unique values (limited sample)
-            unique_values = list(set(non_null_values))[:5]
-            
-            metadata = FieldMetadata(
-                name=field_name,
-                data_type=field_types.get(field_name, DataType.UNKNOWN).value,
-                nullable=(len(non_null_values) < len(values)),
-                null_count=len(values) - len(non_null_values),
-                unique_count=len(set(str(v) for v in non_null_values)),
-                sample_values=unique_values
-            )
-            field_metadata[field_name] = metadata
-        
-        return {
-            'field_metadata': field_metadata,
-            'hierarchy': self.hierarchy_map
-        }

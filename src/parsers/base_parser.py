@@ -34,15 +34,3 @@ class BaseParser(ABC):
         """
         pass
     
-    @abstractmethod
-    def detect_schema(self, data: Any) -> Dict[str, Any]:
-        """
-        Detect and extract schema information from parsed data.
-        
-        Args:
-            data: The parsed data structure
-            
-        Returns:
-            dict: Schema information including field types and metadata
-        """
-        pass

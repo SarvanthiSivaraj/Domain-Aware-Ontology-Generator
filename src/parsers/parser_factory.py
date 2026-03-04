@@ -4,7 +4,7 @@ Parser Factory Module
 Creates the appropriate parser based on file format.
 """
 
-from src.core.data_validator import FileFormat
+from src.core.detector import FileFormat
 from src.parsers.base_parser import BaseParser
 from src.parsers.json_parser import JSONParser
 from src.parsers.csv_parser import CSVParser

@@ -26,7 +26,7 @@ def demo_json_parsing():
     # Validate first
     is_valid, file_format, errors = validate_input_file(json_file)
     if not is_valid:
-        print(f"❌ Validation failed: {errors}")
+        print(f"Validation failed: {errors}")
         return
     
     print(f"✅ File validated: {file_format.value.upper()}\n")
@@ -63,7 +63,7 @@ def demo_csv_parsing():
     # Validate first
     is_valid, file_format, errors = validate_input_file(csv_file)
     if not is_valid:
-        print(f"❌ Validation failed: {errors}")
+        print(f"Validation failed: {errors}")
         return
     
     print(f"✅ File validated: {file_format.value.upper()}\n")
@@ -100,4 +100,4 @@ if __name__ == "__main__":
     demo_json_parsing()
     demo_csv_parsing()
     
-    print("\n\n🎉 Step 2 - Format Detection and Parsing is working!\n")
+    print("\n\nStep 2 - Format Detection and Parsing is working!\n")

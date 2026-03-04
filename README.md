@@ -1,213 +1,306 @@
-# Domain-Aware OWL Ontology Generation Framework for Structured Cybersecurity Data
+# Domain-Aware OWL Ontology Generation Framework
 
-## 1. Overview
+## Overview
 
-Ontology engineering is fundamental to knowledge representation and semantic data integration, particularly in cybersecurity domains where large volumes of structured data must be analyzed efficiently. Traditional ontology development is largely manual, time-consuming, and dependent on domain expertise.
+Ontology engineering plays a critical role in knowledge representation, semantic data integration, and intelligent data analysis. In domains such as cybersecurity, healthcare, finance, and e-commerce, large volumes of structured data are generated continuously. Converting this structured data into machine-readable semantic knowledge remains a challenging task and is typically performed manually by domain experts.
 
-This project proposes a Domain-Aware OWL Ontology Generation Framework that automates the transformation of structured cybersecurity datasets into machine-readable ontologies. The system performs schema-driven analysis, domain-aware entity extraction, and rule-based relationship detection to generate consistent and reusable OWL files.
+This project presents a **Domain-Aware OWL Ontology Generation Framework** that automates the transformation of structured datasets into semantic ontologies. The framework analyzes dataset schemas, performs domain-aware semantic inference, and automatically constructs ontology classes, properties, and relationships.
 
-The framework reduces manual ontology engineering effort while maintaining semantic accuracy and structural consistency.
+The generated ontologies are exported in **OWL (Web Ontology Language)** format and are compatible with semantic web tools such as **Protégé** and reasoning engines.
 
----
-
-## 2. Objectives
-
-- Automate ontology generation from structured cybersecurity datasets.
-- Support JSON and CSV input formats.
-- Perform schema extraction and domain-aware semantic analysis.
-- Identify entities, attributes, and relationships using rule-based methods.
-- Generate OWL files compatible with semantic web tools.
-- Provide a scalable and extensible ontology generation framework.
+The goal of this system is to reduce manual ontology engineering effort while preserving semantic consistency and extensibility.
 
 ---
 
-## 3. System Workflow
+## Objectives
+
+- Automate ontology generation from structured datasets
+- Support **JSON and CSV** input formats
+- Perform schema-driven analysis of datasets
+- Identify entities, attributes, and relationships
+- Apply **domain-aware semantic rules**
+- Generate machine-readable **OWL ontology files**
+- Provide a modular and extensible ontology generation framework
+
+---
+
+## System Workflow
 
 The system follows a modular pipeline architecture:
 
-```
-User Input
-    ↓
+```text
+User Input Dataset
+        ↓
 File Validation
-    ↓
+        ↓
 Format Detection
-    ↓
+        ↓
 Data Parsing
-    ↓
+        ↓
 Schema Extraction
-    ↓
+        ↓
 Domain-Aware Semantic Analysis
-    ↓
+        ↓
 Entity Identification
-    ↓
+        ↓
 Attribute Classification
-    ↓
+        ↓
 Relationship Detection
-    ↓
+        ↓
 Ontology Construction
-    ↓
+        ↓
 OWL File Generation
 ```
 
-### 3.1 Data Input
-The system accepts structured datasets in JSON or CSV format. The input is validated to ensure file integrity and format compatibility.
+---
 
-### 3.2 Format Detection and Parsing
-The system automatically detects file format and parses the data:
-- JSON files are converted into dictionary structures.
-- CSV files are transformed into tabular data representations.
+## System Components
 
-### 3.3 Schema Extraction
-The schema extractor identifies:
+### 1. Data Input
+The system accepts structured datasets in:
+- JSON format
+- CSV format
+
+Input validation ensures the dataset is correctly formatted and accessible.
+
+---
+
+### 2. Format Detection and Parsing
+
+The framework automatically detects the file format and parses it accordingly:
+
+- **JSON Parser**
+  - Converts JSON files into dictionary structures
+- **CSV Parser**
+  - Converts CSV rows into structured tabular data
+
+The parsed dataset is transformed into a unified internal representation for further processing.
+
+---
+
+### 3. Schema Extraction
+
+The schema extraction module analyzes the dataset structure and identifies:
 - Field names
 - Identifier patterns (e.g., `_id`)
-- Repeated prefixes
+- Attribute prefixes
 - Nested attributes
 - Data types
 
-This stage interprets the structural design of the dataset.
+This stage interprets the structural design of the dataset and prepares metadata for semantic analysis.
 
-### 3.4 Domain-Aware Semantic Analysis
-The system applies predefined cybersecurity domain rules to interpret field semantics. Keyword-based and pattern-based inference is used to categorize entities such as:
+---
 
+### 4. Domain-Aware Semantic Analysis
+
+The framework incorporates domain knowledge through **configurable rule sets**.
+
+Using keyword-based and pattern-based inference, the system categorizes dataset elements into domain concepts such as:
 - Users
 - Devices
-- IP Addresses
-- Network Activities
-- Threat Events
+- IP addresses
+- Network activities
+- Threat events
+- System logs
 
-### 3.5 Entity Identification
-Detected domain objects are converted into ontology classes.
+The semantic analyzer maps dataset fields to conceptual entities.
 
-### 3.6 Attribute Classification
-Descriptive fields are mapped as data properties associated with corresponding classes.
+---
 
-### 3.7 Relationship Detection
-Relationships between entities are identified using:
-- Pattern-based rules
-- Co-occurrence analysis
-- Identifier-based references
+### 5. Entity Identification
 
-These are represented as object properties in the ontology.
+Detected domain entities are mapped to **ontology classes**.
 
-### 3.8 Ontology Construction
-The ontology builder creates:
+Example:
+- `user_id` → `User`
+- `device_ip` → `Device`
+- `source_ip` → `IPAddress`
+
+These classes form the conceptual structure of the ontology.
+
+---
+
+### 6. Attribute Classification
+
+Descriptive fields that represent properties of entities are mapped as **data properties**.
+
+Example:
+```text
+User
+├── hasUsername
+├── hasRole
+└── hasLoginTime
+```
+
+Data properties describe attributes of ontology classes.
+
+---
+
+### 7. Relationship Detection
+
+Relationships between entities are inferred using multiple strategies:
+- **Pattern-based rules**
+- **Co-occurrence analysis**
+- **Identifier-based references**
+
+These relationships are represented as **object properties** in the ontology.
+
+Example:
+- `User` → `performs` → `NetworkActivity`
+- `Device` → `hasIP` → `IPAddress`
+- `NetworkActivity` → `triggers` → `ThreatEvent`
+
+---
+
+### 8. Ontology Construction
+
+The ontology builder creates the core semantic model including:
 - Classes
 - Object properties
 - Data properties
-- Domain and range assignments
+- Domain and range definitions
 
-### 3.9 OWL File Generation
-The constructed ontology is serialized into a standard OWL file compatible with semantic web tools.
-
----
-
-## 4. Architecture Design
-
-The system follows a layered and modular architecture:
-
-- Input Layer: Handles file validation and format detection.
-- Parsing Layer: Converts raw data into structured form.
-- Analysis Layer: Performs schema extraction and semantic inference.
-- Knowledge Modeling Layer: Constructs ontology components.
-- Output Layer: Generates OWL file.
-
-This modular design ensures extensibility and maintainability.
+This process uses the **Owlready2 library** to construct ontology elements programmatically.
 
 ---
 
-## 5. Technology Stack
+### 9. OWL File Generation
 
-- Programming Language: Python
-- Libraries:
-  - csv/json (Built-in parsing)
-  - Owlready2 (Ontology construction and OWL generation)
-  - pytest/unittest (Testing framework)
-- Output Format: OWL (Web Ontology Language)
+The final ontology is serialized into a **standard OWL file**.
+
+The generated OWL file can be loaded into tools such as:
+- Protégé
+- RDF-based knowledge graph systems
+- Semantic reasoning engines
 
 ---
 
-## 6. Project Structure
+## Architecture Design
 
-```
+The system follows a layered architecture:
+
+### Input Layer
+Handles dataset ingestion, validation, and format detection.
+
+### Parsing Layer
+Transforms raw data into structured representations.
+
+### Analysis Layer
+Performs schema extraction and semantic inference.
+
+### Knowledge Modeling Layer
+Constructs ontology components including classes and properties.
+
+### Output Layer
+Exports the generated ontology in OWL format.
+
+This modular architecture ensures maintainability, scalability, and extensibility.
+
+---
+
+## Technology Stack
+
+| Component | Technology |
+|---|---|
+| Programming Language | Python |
+| Data Parsing | csv, json |
+| Ontology Construction | Owlready2 |
+| Testing Framework | pytest / unittest |
+| Output Format | OWL (Web Ontology Language) |
+
+---
+
+## Project Structure
+
+```text
 Domain-Aware-Ontology-Generator/
-│
-├── config/             # Domain configuration and keyword dictionaries
+├── config/
+│   └── domain_rules/       # Domain keyword dictionaries
 ├── src/
-│   ├── core/           # Validation and data structures
-│   ├── parsers/        # JSON and CSV parsers
-│   ├── analyzers/      # Semantic analysis and relationship detection
-│   ├── ontology_builder/ # OWL construction logic
-│   └── utils/          # Type detection and helper functions
-│
-├── tests/              # Unit and integration tests
-├── output/             # Generated OWL files
+│   ├── core/               # File validation and core utilities
+│   ├── parsers/            # JSON and CSV parsing modules
+│   ├── analyzers/          # Semantic analysis and relationship detection
+│   ├── ontology_builder/   # Ontology construction logic
+│   └── utils/              # Helper utilities and datatype detection
+├── tests/                  # Unit and integration tests
+├── output/                 # Generated OWL ontology files
 └── README.md
 ```
 
 ---
 
-## 7. Installation
+## Installation
 
 Clone the repository:
-
 ```bash
 git clone <repository_url>
 cd Domain-Aware-Ontology-Generator
 ```
 
 Install required dependencies:
-
 ```bash
 pip install -r requirements.txt
 ```
 
 ---
 
-## 8. Usage
+## Usage
 
 Run the demo script:
-
 ```bash
 python tests/demo_parsing.py
 ```
 
-Provide the path to a JSON or CSV file when prompted.
+Provide the path to the dataset file when prompted.
 
-The generated ontology file will be saved in the `output/` directory.
+Example:
+```text
+Enter dataset path: datasets/sample_dataset.csv
+```
 
----
-
-## 9. Expected Output
-
-- Automatically generated OWL ontology file.
-- Structured class hierarchy.
-- Object properties representing relationships.
-- Data properties representing attributes.
-- Semantic structure compatible with ontology visualization tools.
+The generated ontology file will be saved in:
+`output/generated_ontology.owl`
 
 ---
 
-## 10. Novelty
+## Expected Output
 
-The novelty of this project lies in its domain-aware and semi-automatic ontology generation approach. Unlike generic data-to-ontology converters, the proposed framework incorporates cybersecurity-specific semantic rules to improve entity detection and relationship modeling.
+The system produces an OWL ontology file containing:
+- Automatically generated ontology classes
+- Object properties representing relationships
+- Data properties representing attributes
+- Domain and range definitions
 
-The system bridges structured data and semantic knowledge by transforming schema-level information into ontology components using rule-based semantic inference.
-
----
-
-## 11. Future Enhancements
-
-- Multi-domain ontology support.
-- Machine learning-based relationship prediction.
-- Interactive ontology visualization interface.
-- Integration with knowledge graph databases.
-- Automated ontology validation and reasoning support.
+The output ontology can be visualized using Protégé.
 
 ---
 
-## 12. Conclusion
+## Novelty
 
-The Domain-Aware OWL Ontology Generation Framework provides a structured and scalable approach to automating ontology engineering from structured cybersecurity datasets. By combining schema-driven analysis with domain-aware rule-based inference, the system reduces manual effort while maintaining semantic integrity.
+The novelty of this project lies in its domain-aware ontology generation approach.
 
-The framework serves as a foundation for advanced semantic modeling and knowledge-driven cybersecurity analysis.
+Unlike traditional generic data-to-ontology converters, this framework incorporates domain-specific semantic rules to improve:
+- entity detection accuracy
+- relationship modeling
+- semantic structure consistency
+
+By combining schema-driven analysis with domain-aware inference, the framework bridges the gap between structured data and semantic knowledge representation.
+
+---
+
+## Future Enhancements
+- Multi-domain ontology support
+- Machine learning-based relationship prediction
+- Ontology visualization interface
+- Integration with knowledge graph databases
+- Automated ontology validation and reasoning
+
+---
+
+## Conclusion
+
+The Domain-Aware OWL Ontology Generation Framework provides a scalable approach to automating ontology engineering from structured datasets.
+
+By combining schema-driven analysis with domain-aware semantic inference, the framework significantly reduces manual ontology construction effort while maintaining semantic integrity.
+
+This system serves as a foundation for advanced semantic modeling, knowledge graph construction, and intelligent data analysis.

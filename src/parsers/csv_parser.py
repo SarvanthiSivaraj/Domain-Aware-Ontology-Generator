@@ -9,7 +9,8 @@ import pandas as pd
 from typing import Dict, Any, List
 from src.parsers.base_parser import BaseParser
 from src.core.parsed_data import ParsedData, FieldMetadata
-from src.utils.type_detector import infer_column_type, DataType
+from src.utils.type_detector import DataType
+from src.analyzers.schema_analyzer import SchemaAnalyzer
 
 
 class CSVParser(BaseParser):
@@ -47,46 +48,11 @@ class CSVParser(BaseParser):
         records = df.to_dict('records')
         parsed_data.set_records(records)
         
-        # Detect schema
-        schema = self.detect_schema(df)
-        parsed_data.set_field_metadata(schema['field_metadata'])
+        # Detect schema using the new analyzer
+        analyzer = SchemaAnalyzer()
+        schema_result = analyzer.analyze(records)
+        
+        parsed_data.set_field_metadata(schema_result['field_metadata'])
         
         return parsed_data
     
-    def detect_schema(self, df: pd.DataFrame) -> Dict[str, Any]:
-        """
-        Detect schema from DataFrame.
-        
-        Args:
-            df: Pandas DataFrame
-            
-        Returns:
-            dict: Schema information
-        """
-        field_metadata = {}
-        
-        for column in df.columns:
-            # Get column values
-            values = df[column].tolist()
-            
-            # Infer column type
-            column_type = infer_column_type(values)
-            
-            # Calculate statistics
-            non_null_values = [v for v in values if pd.notna(v) and v != '']
-            unique_values = list(set(non_null_values))[:5]
-            
-            metadata = FieldMetadata(
-                name=column,
-                data_type=column_type.value,
-                nullable=(len(non_null_values) < len(values)),
-                null_count=len(values) - len(non_null_values),
-                unique_count=df[column].nunique(),
-                sample_values=unique_values
-            )
-            field_metadata[column] = metadata
-        
-        return {
-            'field_metadata': field_metadata,
-            'hierarchy': {}  # CSV is flat, no hierarchy
-        }

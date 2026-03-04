@@ -18,6 +18,8 @@ class FieldMetadata:
     nullable: bool = True
     null_count: int = 0
     unique_count: int = 0
+    is_identifier: bool = False
+    prefix: Optional[str] = None
     sample_values: List[Any] = field(default_factory=list)
     
     def to_dict(self) -> dict:
@@ -28,6 +30,8 @@ class FieldMetadata:
             'nullable': self.nullable,
             'null_count': self.null_count,
             'unique_count': self.unique_count,
+            'is_identifier': self.is_identifier,
+            'prefix': self.prefix,
             'sample_values': self.sample_values[:5]  # Limit samples
         }
 
@@ -154,16 +158,21 @@ class ParsedData:
         lines.append("")
         
         if self.field_metadata:
-            lines.append("Field Types:")
+            lines.append("Field Analysis:")
             for field_name, metadata in self.field_metadata.items():
+                attr_str = []
+                if metadata.is_identifier: attr_str.append("ID")
+                if metadata.prefix: attr_str.append(f"Prefix: {metadata.prefix}")
+                
+                attr_desc = f" [{', '.join(attr_str)}]" if attr_str else ""
                 nullable_str = " (nullable)" if metadata.nullable else ""
-                lines.append(f"  - {field_name}: {metadata.data_type}{nullable_str}")
+                lines.append(f"  - {field_name}: {metadata.data_type}{nullable_str}{attr_desc}")
         
         if self.hierarchy:
             lines.append("")
             lines.append(f"Hierarchies detected: {len(self.hierarchy)}")
             for parent, children in self.hierarchy.items():
-                lines.append(f"  - {parent} → {children}")
+                lines.append(f"  - {parent} -> {children}")
         
         return "\n".join(lines)
     
