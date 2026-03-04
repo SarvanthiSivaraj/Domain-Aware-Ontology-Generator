@@ -1,0 +1,30 @@
+{
+    "domain_name": "Cybersecurity",
+    "keywords": [
+        "ip_address",
+        "login",
+        "password",
+        "alert",
+        "threat",
+        "vulnerability",
+        "malware",
+        "firewall",
+        "port",
+        "protocol",
+        "packet",
+        "encryption",
+        "auth",
+        "user_role",
+        "session",
+        "audit",
+        "security",
+        "attack"
+    ],
+    "entities": [
+        "User",
+        "Device",
+        "Alert",
+        "NetworkActivity",
+        "LogEntry"
+    ]
+}

@@ -4,6 +4,8 @@ from src.core.validator import FileValidator
 from src.core.detector import FormatDetector, FileFormat
 from src.parsers.parser_factory import create_parser
 from src.schema.schema_extractor import SchemaExtractor
+from src.domain.domain_detector import DomainDetector
+from src.domain.domain_loader import DomainLoader
 
 def run_pipeline(file_path: str):
     print(f"\n--- Phase 1: Core Foundation ---")
@@ -52,17 +54,35 @@ def run_pipeline(file_path: str):
     parsed_data.set_hierarchy(current_hierarchy)
     
     print(f"✅ Schema extraction complete. Fields detected: {len(parsed_data.get_fields())}")
-    return parsed_data
+
+    print(f"\n--- Phase 3: Domain Awareness ---")
+    # Step 5: Domain Detection
+    print(f"[5/12] Detecting domain...")
+    detector = DomainDetector()
+    domain, confidence = detector.detect(parsed_data.get_fields())
+    print(f"✅ Domain detected: {domain} (Confidence: {confidence:.2f})")
+
+    # Step 6: Domain Knowledge Loading
+    print(f"[6/12] Loading domain knowledge...")
+    loader = DomainLoader()
+    domain_config = loader.load(domain)
+    
+    if domain_config:
+        print(f"✅ Loaded {len(domain_config.get('entities', []))} entity rules for {domain}.")
+    
+    return parsed_data, domain, domain_config
 
 def main():
     parser = argparse.ArgumentParser(description="Multi-Domain Aware OWL Ontology Generator")
     parser.add_argument("--input", "-i", required=True, help="Path to input dataset (JSON/CSV)")
     args = parser.parse_args()
     
-    parsed_data = run_pipeline(args.input)
-    if parsed_data:
+    result = run_pipeline(args.input)
+    if result:
+        parsed_data, domain, domain_config = result
         print(f"\n{parsed_data.summary()}")
-        print("\nPhase 2 (Step 4) Complete! Ready for Step 5 (Domain Detection).")
+        print(f"\nActive Domain: {domain}")
+        print("Phase 3 Complete! Ready for Step 7 (Entity Identification).")
 
 if __name__ == "__main__":
     main()

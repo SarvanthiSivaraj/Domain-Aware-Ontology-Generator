@@ -1,0 +1,30 @@
+{
+    "domain_name": "Healthcare",
+    "keywords": [
+        "patient",
+        "doctor",
+        "diagnosis",
+        "treatment",
+        "medicine",
+        "prescription",
+        "heart_rate",
+        "blood_pressure",
+        "temp",
+        "symptoms",
+        "disease",
+        "appointment",
+        "hospital",
+        "clinic",
+        "medical_record",
+        "bmi",
+        "glucose",
+        "health"
+    ],
+    "entities": [
+        "Patient",
+        "Doctor",
+        "MedicalRecord",
+        "Condition",
+        "Treatment"
+    ]
+}
