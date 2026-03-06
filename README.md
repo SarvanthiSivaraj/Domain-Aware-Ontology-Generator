@@ -100,7 +100,7 @@ python main.py --input tests/test_data/sample_users.csv
 | **Phase 2: Structural** | ✅ Complete | 4 |
 | **Phase 3: Domain** | ✅ Complete | 5, 6 |
 | **Phase 4: Semantic** | ✅ Complete | 7, 8, 9 |
-| **Phase 5: Construction** | 🚧 In Progress | 10 (Complete), 11, 12 |
+| **Phase 5: Construction** | ✅ Complete | 10, 11, 12 |
 
 ---
 
@@ -112,3 +112,5 @@ python main.py --input tests/test_data/sample_users.csv
 - **Step 8**: Classifies entity fields as Data Properties with XSD type mappings (`xsd:string`, `xsd:integer`, `xsd:float`, `xsd:boolean`, `xsd:dateTime`).
 - **Step 9**: Detects Object Properties (relationships) between entities via domain rules and foreign key inference.
 - **Step 10**: Constructs OWL ontology model using Owlready2 with Classes, Data Properties, and Object Properties.
+- **Step 11**: Generates OWL Individuals from dataset records with data property values and object property links.
+- **Step 12**: Exports the final ontology to `.owl` (RDF/XML) format, compatible with Protégé and reasoning engines.

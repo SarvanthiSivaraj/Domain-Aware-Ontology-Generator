@@ -10,6 +10,8 @@ from src.analyzers.entity_identifier import EntityIdentifier
 from src.analyzers.attribute_classifier import AttributeClassifier
 from src.analyzers.relationship_detector import RelationshipDetector
 from src.ontology_builder.ontology_builder import OntologyBuilder
+from src.ontology_builder.individual_generator import IndividualGenerator
+from src.ontology_builder.owl_exporter import OWLExporter
 
 def run_pipeline(file_path: str):
     print(f"\n--- Phase 1: Core Foundation ---")
@@ -117,7 +119,28 @@ def run_pipeline(file_path: str):
     print(f"✅ Data Properties: {summary['data_properties']}")
     print(f"✅ Object Properties: {summary['object_properties']}")
 
-    return parsed_data, domain_config, entities, attributes, relationships, ontology, builder
+    # Step 11: Individual Generation
+    print(f"[11/12] Generating individuals...")
+    generator = IndividualGenerator(builder)
+    ind_stats = generator.generate(parsed_data, entities, attributes, relationships)
+
+    for ent_name, count in ind_stats.items():
+        print(f"✅ {ent_name}: {count} individuals created")
+
+    ind_summary = generator.get_individuals_summary()
+    for ind in ind_summary:
+        print(f"     ↳ {ind['name']} (type: {ind['type']})")
+
+    total_inds = sum(ind_stats.values())
+    print(f"✅ Total: {total_inds} individuals generated")
+
+    # Step 12: OWL File Generation
+    print(f"[12/12] Exporting OWL file...")
+    exporter = OWLExporter()
+    output_path = exporter.export(ontology, domain_config.name)
+    print(f"✅ OWL file saved to: {output_path}")
+
+    return parsed_data, domain_config, entities, attributes, relationships, ontology, builder, generator, output_path
 
 def main():
     parser = argparse.ArgumentParser(description="Multi-Domain Aware OWL Ontology Generator")
@@ -126,7 +149,7 @@ def main():
     
     result = run_pipeline(args.input)
     if result:
-        parsed_data, domain_config, entities, attributes, relationships, ontology, builder = result
+        parsed_data, domain_config, entities, attributes, relationships, ontology, builder, generator, output_path = result
         print(f"\n{parsed_data.summary()}")
         print(f"\nActive Domain: {domain_config.name}")
         print(f"Identified Entities: {', '.join(entities.keys())}")
@@ -135,7 +158,10 @@ def main():
         print(f"Detected Relationships: {len(relationships)} object properties")
         summary = builder.get_summary()
         print(f"Ontology: {len(summary['classes'])} classes, {len(summary['data_properties'])} data props, {len(summary['object_properties'])} object props")
-        print("\nPhase 5 (Step 10) Complete! Ready for Step 11 (Individual Generation).")
+        total_inds = sum(generator.stats.values()) if generator.stats else 0
+        print(f"Individuals: {total_inds} instances created")
+        print(f"Output: {output_path}")
+        print("\n\u2705 All 12 Steps Complete! Pipeline finished successfully.")
 
 if __name__ == "__main__":
     main()
