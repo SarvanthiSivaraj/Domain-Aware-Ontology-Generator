@@ -43,5 +43,19 @@
             "doctor_id",
             "specialty"
         ]
-    }
+    },
+    "relationships": [
+        {
+            "source": "Patient",
+            "target": "MedicalRecord",
+            "property_name": "hasMedicalRecord",
+            "via_field": "record_id"
+        },
+        {
+            "source": "MedicalRecord",
+            "target": "Doctor",
+            "property_name": "treatedBy",
+            "via_field": "doctor_id"
+        }
+    ]
 }

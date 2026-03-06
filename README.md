@@ -99,7 +99,7 @@ python main.py --input tests/test_data/sample_users.csv
 | **Phase 1: Foundation** | ✅ Complete | 1, 2, 3 |
 | **Phase 2: Structural** | ✅ Complete | 4 |
 | **Phase 3: Domain** | ✅ Complete | 5, 6 |
-| **Phase 4: Semantic** | 🚧 In Progress | 7 (Complete), 8 (Complete), 9 |
+| **Phase 4: Semantic** | ✅ Complete | 7, 8, 9 |
 | **Phase 5: Construction** | ⏳ Planned | 10, 11, 12 |
 
 ---
@@ -110,3 +110,4 @@ python main.py --input tests/test_data/sample_users.csv
 - **Step 6**: Produces an active `DomainConfig` object containing entity-to-field mappings.
 - **Step 7**: Successfully identifies core Entities and their "Anchor" ID fields.
 - **Step 8**: Classifies entity fields as Data Properties with XSD type mappings (`xsd:string`, `xsd:integer`, `xsd:float`, `xsd:boolean`, `xsd:dateTime`).
+- **Step 9**: Detects Object Properties (relationships) between entities via domain rules and foreign key inference.

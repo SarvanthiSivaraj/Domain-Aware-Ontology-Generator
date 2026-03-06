@@ -44,5 +44,19 @@
             "event_id",
             "log_msg"
         ]
-    }
+    },
+    "relationships": [
+        {
+            "source": "User",
+            "target": "Device",
+            "property_name": "usesDevice",
+            "via_field": "device_id"
+        },
+        {
+            "source": "User",
+            "target": "LogEntry",
+            "property_name": "hasLogEntry",
+            "via_field": "session_id"
+        }
+    ]
 }

@@ -8,6 +8,7 @@ from src.domain.domain_detector import DomainDetector
 from src.domain.domain_loader import DomainLoader
 from src.analyzers.entity_identifier import EntityIdentifier
 from src.analyzers.attribute_classifier import AttributeClassifier
+from src.analyzers.relationship_detector import RelationshipDetector
 
 def run_pipeline(file_path: str):
     print(f"\n--- Phase 1: Core Foundation ---")
@@ -92,7 +93,18 @@ def run_pipeline(file_path: str):
         for attr in info['attributes']:
             print(f"     ↳ {attr['field']}: {attr['data_type']} → {attr['xsd_type']}")
 
-    return parsed_data, domain_config, entities, attributes
+    # Step 9: Relationship Detection
+    print(f"[9/12] Detecting relationships...")
+    rel_detector = RelationshipDetector()
+    relationships = rel_detector.detect(entities, domain_config, parsed_data)
+
+    for rel in relationships:
+        print(f"✅ {rel['source']} --{rel['property_name']}--> {rel['target']} (via: {rel['via_field']}, method: {rel['detection_method']})")
+
+    if not relationships:
+        print("ℹ️  No relationships detected between identified entities.")
+
+    return parsed_data, domain_config, entities, attributes, relationships
 
 def main():
     parser = argparse.ArgumentParser(description="Multi-Domain Aware OWL Ontology Generator")
@@ -101,13 +113,14 @@ def main():
     
     result = run_pipeline(args.input)
     if result:
-        parsed_data, domain_config, entities, attributes = result
+        parsed_data, domain_config, entities, attributes, relationships = result
         print(f"\n{parsed_data.summary()}")
         print(f"\nActive Domain: {domain_config.name}")
         print(f"Identified Entities: {', '.join(entities.keys())}")
         total_attrs = sum(len(a['attributes']) for a in attributes.values())
         print(f"Classified Attributes: {total_attrs} data properties across {len(attributes)} entities")
-        print("\nPhase 4 (Steps 7-8) Complete! Ready for Step 9 (Relationship Detection).")
+        print(f"Detected Relationships: {len(relationships)} object properties")
+        print("\nPhase 4 Complete! Ready for Step 10 (Ontology Construction).")
 
 if __name__ == "__main__":
     main()
