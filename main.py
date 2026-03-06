@@ -9,6 +9,7 @@ from src.domain.domain_loader import DomainLoader
 from src.analyzers.entity_identifier import EntityIdentifier
 from src.analyzers.attribute_classifier import AttributeClassifier
 from src.analyzers.relationship_detector import RelationshipDetector
+from src.ontology_builder.ontology_builder import OntologyBuilder
 
 def run_pipeline(file_path: str):
     print(f"\n--- Phase 1: Core Foundation ---")
@@ -104,7 +105,19 @@ def run_pipeline(file_path: str):
     if not relationships:
         print("ℹ️  No relationships detected between identified entities.")
 
-    return parsed_data, domain_config, entities, attributes, relationships
+    print(f"\n--- Phase 5: Ontology Construction ---")
+    # Step 10: Ontology Construction
+    print(f"[10/12] Constructing ontology...")
+    builder = OntologyBuilder()
+    ontology = builder.build(domain_config.name, entities, attributes, relationships)
+    summary = builder.get_summary()
+
+    print(f"✅ Ontology IRI: {summary['iri']}")
+    print(f"✅ OWL Classes: {summary['classes']}")
+    print(f"✅ Data Properties: {summary['data_properties']}")
+    print(f"✅ Object Properties: {summary['object_properties']}")
+
+    return parsed_data, domain_config, entities, attributes, relationships, ontology, builder
 
 def main():
     parser = argparse.ArgumentParser(description="Multi-Domain Aware OWL Ontology Generator")
@@ -113,14 +126,16 @@ def main():
     
     result = run_pipeline(args.input)
     if result:
-        parsed_data, domain_config, entities, attributes, relationships = result
+        parsed_data, domain_config, entities, attributes, relationships, ontology, builder = result
         print(f"\n{parsed_data.summary()}")
         print(f"\nActive Domain: {domain_config.name}")
         print(f"Identified Entities: {', '.join(entities.keys())}")
         total_attrs = sum(len(a['attributes']) for a in attributes.values())
         print(f"Classified Attributes: {total_attrs} data properties across {len(attributes)} entities")
         print(f"Detected Relationships: {len(relationships)} object properties")
-        print("\nPhase 4 Complete! Ready for Step 10 (Ontology Construction).")
+        summary = builder.get_summary()
+        print(f"Ontology: {len(summary['classes'])} classes, {len(summary['data_properties'])} data props, {len(summary['object_properties'])} object props")
+        print("\nPhase 5 (Step 10) Complete! Ready for Step 11 (Individual Generation).")
 
 if __name__ == "__main__":
     main()
