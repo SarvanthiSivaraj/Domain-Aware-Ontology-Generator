@@ -183,6 +183,10 @@ def process_directory(input_dir: str, output_base: str, llm_service: LLMService)
             result = run_pipeline(file_path, output_base, llm_service)
             if result:
                 success_count += 1
+            
+            # Pacing: add a small delay between files to avoid rate limits
+            import time
+            time.sleep(2)
         except Exception as e:
             print(f"❌ Unexpected error processing {file_path}: {str(e)}")
             

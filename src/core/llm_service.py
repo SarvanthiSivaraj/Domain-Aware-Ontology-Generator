@@ -34,7 +34,7 @@ class LLMService:
         if self.api_key:
             try:
                 self.client = genai.Client(api_key=self.api_key)
-                self.model_id = 'gemini-1.5-flash'
+                self.model_id = 'models/gemini-2.0-flash'
             except Exception as e:
                 print(f"Error initializing Gemini client: {e}")
                 self.client = None
@@ -70,23 +70,35 @@ class LLMService:
         {text[:4000]}  # Trim to avoid token limits
         """
         
-        try:
-            response = self.client.models.generate_content(
-                model=self.model_id,
-                contents=prompt
-            )
-            # Basic JSON extraction
-            content = response.text
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0].strip()
-            elif "```" in content:
-                content = content.split("```")[1].split("```")[0].strip()
-                
-            import json
-            return json.loads(content)
-        except Exception as e:
-            print(f"Error in LLM entity analysis: {str(e)}")
-            return []
+        # Retry logic with exponential backoff
+        import time
+        max_retries = 3
+        base_delay = 5
+        
+        for attempt in range(max_retries):
+            try:
+                response = self.client.models.generate_content(
+                    model=self.model_id,
+                    contents=prompt
+                )
+                # Basic JSON extraction
+                content = response.text
+                if "```json" in content:
+                    content = content.split("```json")[1].split("```")[0].strip()
+                elif "```" in content:
+                    content = content.split("```")[1].split("```")[0].strip()
+                    
+                import json
+                return json.loads(content)
+            except Exception as e:
+                if "429" in str(e) and attempt < max_retries - 1:
+                    delay = base_delay * (2 ** attempt)
+                    print(f"⚠️ Rate limit hit (429). Retrying in {delay}s... (Attempt {attempt + 1}/{max_retries})")
+                    time.sleep(delay)
+                    continue
+                print(f"Error in LLM entity analysis: {str(e)}")
+                return []
+        return []
 
     def infer_relationships(self, entities: List[str], text: str) -> List[Dict[str, Any]]:
         """
@@ -112,16 +124,28 @@ class LLMService:
         [{{ "source": "EntityA", "target": "EntityB", "property": "hasRelationship", "description": "context" }}]
         """
         
-        try:
-            response = self.client.models.generate_content(
-                model=self.model_id,
-                contents=prompt
-            )
-            content = response.text
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0].strip()
-            import json
-            return json.loads(content)
-        except Exception as e:
-            print(f"Error in LLM relationship inference: {str(e)}")
-            return []
+        # Retry logic with exponential backoff
+        import time
+        max_retries = 3
+        base_delay = 5
+        
+        for attempt in range(max_retries):
+            try:
+                response = self.client.models.generate_content(
+                    model=self.model_id,
+                    contents=prompt
+                )
+                content = response.text
+                if "```json" in content:
+                    content = content.split("```json")[1].split("```")[0].strip()
+                import json
+                return json.loads(content)
+            except Exception as e:
+                if "429" in str(e) and attempt < max_retries - 1:
+                    delay = base_delay * (2 ** attempt)
+                    print(f"⚠️ Rate limit hit (429). Retrying in {delay}s... (Attempt {attempt + 1}/{max_retries})")
+                    time.sleep(delay)
+                    continue
+                print(f"Error in LLM relationship inference: {str(e)}")
+                return []
+        return []
