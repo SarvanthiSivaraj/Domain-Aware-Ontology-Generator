@@ -6,6 +6,7 @@ and automatic foreign key inference.
 from typing import Dict, Any, List
 from src.core.parsed_data import ParsedData
 from src.domain.domain_loader import DomainConfig
+from src.core.llm_service import LLMService
 
 
 class RelationshipDetector:
@@ -23,6 +24,7 @@ class RelationshipDetector:
         entities: Dict[str, Dict[str, Any]],
         domain_config: DomainConfig,
         parsed_data: ParsedData,
+        llm_service: LLMService = None
     ) -> List[Dict[str, Any]]:
         """
         Detect relationships between identified entities.
@@ -96,5 +98,31 @@ class RelationshipDetector:
                             "detection_method": "foreign_key_inference",
                         })
                         seen.add(key)
+
+        # --- Strategy 3: LLM Inference ---
+        if llm_service and llm_service.is_available():
+            text_context = ""
+            if parsed_data.file_format == 'pdf':
+                text_context = "\n".join([r.get('text_content', '') for r in parsed_data.get_records()[:3]])
+            
+            if text_context:
+                llm_rels = llm_service.infer_relationships(list(entities.keys()), text_context)
+                for rel in llm_rels:
+                    source = rel.get("source")
+                    target = rel.get("target")
+                    prop = rel.get("property")
+                    
+                    if source in entities and target in entities:
+                        key = (source, target, prop)
+                        if key not in seen:
+                            relationships.append({
+                                "source": source,
+                                "target": target,
+                                "property_name": prop,
+                                "via_field": "llm_inferred",
+                                "detection_method": "llm_inference",
+                                "description": rel.get("description")
+                            })
+                            seen.add(key)
 
         return relationships

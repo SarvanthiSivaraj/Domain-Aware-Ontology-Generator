@@ -8,6 +8,7 @@ from src.core.detector import FileFormat
 from src.parsers.base_parser import BaseParser
 from src.parsers.json_parser import JSONParser
 from src.parsers.csv_parser import CSVParser
+from src.parsers.pdf_parser import PDFParser
 
 
 def create_parser(file_format: FileFormat) -> BaseParser:
@@ -27,6 +28,8 @@ def create_parser(file_format: FileFormat) -> BaseParser:
         return JSONParser()
     elif file_format == FileFormat.CSV:
         return CSVParser()
+    elif file_format == FileFormat.PDF:
+        return PDFParser()
     else:
         raise ValueError(f"Unsupported file format: {file_format}")
 

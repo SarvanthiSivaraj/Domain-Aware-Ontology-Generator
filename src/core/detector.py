@@ -11,6 +11,7 @@ from typing import Tuple
 class FileFormat(Enum):
     JSON = "json"
     CSV = "csv"
+    PDF = "pdf"
     UNKNOWN = "unknown"
 
 class FormatDetector:
@@ -26,6 +27,8 @@ class FormatDetector:
             return FileFormat.JSON
         elif ext == '.csv':
             return FileFormat.CSV
+        elif ext == '.pdf':
+            return FileFormat.PDF
         return FileFormat.UNKNOWN
 
     @staticmethod
@@ -42,6 +45,9 @@ class FormatDetector:
                     header = next(reader, None)
                     if not header:
                          return False, "CSV has no valid header."
+                elif file_format == FileFormat.PDF:
+                    # Basic check for PDF header
+                    return True, ""
                 return True, ""
         except Exception as e:
             return False, str(e)

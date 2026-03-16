@@ -8,11 +8,12 @@ import sys
 import os
 
 # Add parent directory to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from src.parsers.json_parser import JSONParser
 from src.parsers.csv_parser import CSVParser
-from src.core.data_validator import validate_input_file
+from src.core.validator import FileValidator
+from src.core.detector import FormatDetector
 
 
 def demo_json_parsing():
@@ -21,14 +22,15 @@ def demo_json_parsing():
     print("JSON PARSING DEMO")
     print("=" * 60)
     
-    json_file = "tests/test_data/sample_cybersecurity.json"
+    json_file = os.path.join(os.path.dirname(__file__), "../data/sample_cybersecurity.json")
     
     # Validate first
-    is_valid, file_format, errors = validate_input_file(json_file)
-    if not is_valid:
-        print(f"Validation failed: {errors}")
+    result = FileValidator.validate(json_file)
+    if not result.is_valid:
+        print(f"Validation failed: {result.errors}")
         return
     
+    file_format = FormatDetector.detect(json_file)
     print(f"✅ File validated: {file_format.value.upper()}\n")
     
     # Parse
@@ -58,14 +60,15 @@ def demo_csv_parsing():
     print("CSV PARSING DEMO")
     print("=" * 60)
     
-    csv_file = "tests/test_data/sample_users.csv"
+    csv_file = os.path.join(os.path.dirname(__file__), "../data/sample_users.csv")
     
     # Validate first
-    is_valid, file_format, errors = validate_input_file(csv_file)
-    if not is_valid:
-        print(f"Validation failed: {errors}")
+    result = FileValidator.validate(csv_file)
+    if not result.is_valid:
+        print(f"Validation failed: {result.errors}")
         return
     
+    file_format = FormatDetector.detect(csv_file)
     print(f"✅ File validated: {file_format.value.upper()}\n")
     
     # Parse

@@ -16,8 +16,8 @@ The system follows a rigorous 12-step pipeline divided into five functional phas
 
 ### Phase 1: Core Foundation
 1.  **File Validation**: Ensures file existence, readability, and size constraints.
-2.  **Format Detection**: Automatically identifies JSON or CSV formats.
-3.  **Data Parsing**: Ingests raw data and flattens nested structures (JSON).
+2.  **Format Detection**: Automatically identifies PDF, JSON, or CSV formats.
+3.  **Data Parsing**: Ingests raw data, flattens nesting (JSON), or extracts text (PDF).
 
 ### Phase 2: Structural Analysis
 4.  **Schema Extraction**: Analyzes data types, identifies IDs, and detects prefix-based hierarchies.
@@ -42,21 +42,26 @@ The system follows a rigorous 12-step pipeline divided into five functional phas
 
 ```text
 Domain-Aware-Ontology-Generator/
+├── input/              # Source directory for datasets (PDF/JSON/CSV)
 ├── config/
 │   └── domain_rules/       # JSON configuration for domain-specific keywords and mappings
 ├── src/
-│   ├── core/               # Steps 1-2: validator.py, detector.py
-│   ├── parsers/            # Step 3: JSON and CSV parsing logic
+│   ├── core/               # Steps 1-2: validator.py, detector.py, llm_service.py
+│   ├── parsers/            # Step 3: JSON, CSV, and PDF parsing logic
 │   ├── schema/             # Step 4: Schema extraction and metadata
 │   ├── domain/             # Steps 5-6: Domain detection and knowledge loading
 │   ├── analyzers/          # Steps 7-9: Semantic inference modules
 │   ├── ontology_builder/   # Step 10: OWL construction logic
 │   └── utils/              # Datatype detection and helper utilities
 ├── tests/
-│   └── test_data/          # Sample datasets (Cybersecurity, Healthcare, Users)
+│   ├── unit/               # Logic tests for individual components
+│   ├── integration/        # End-to-end and verification scripts
+│   └── data/               # Sample datasets for testing
 ├── output/                 # Destination for generated OWL files
 ├── main.py                 # Primary entry point for the pipeline
-└── requirements.txt
+├── requirements.txt
+├── .env                    # Environment variables (Gemini API Key)
+└── .gitignore
 ```
 
 ---
@@ -78,14 +83,38 @@ Domain-Aware-Ontology-Generator/
 
 ## Usage
 
-The framework is executed via `main.py`. Provide the path to your dataset using the `--input` or `-i` flag.
+The framework is executed via `main.py`.
 
-### Run Cybersecurity Example (JSON)
+### Support Formats
+- **PDF**: Unstructured reports (Semantic mapping requires a Gemini API key in `.env`).
+- **JSON**: Structured logs or entity collections.
+- **CSV**: Tabular data.
+
+### CLI Options
 ```bash
-python main.py --input tests/test_data/sample_cybersecurity.json
+python main.py --input <path_to_file> --output <base_output_dir>
+# OR
+python main.py --dir <input_directory> --output <base_output_dir>
 ```
 
-### Run Healthcare/User Example (CSV)
+### Examples
+#### Run Batch Processing (Recommended)
+Place your `.pdf`, `.json`, or `.csv` files inside the `input/` folder, then run:
+```bash
+python main.py --dir ./input --output ./output
+```
+
+#### Run Single File Report
+```bash
+python main.py --input tests/test_data/sample_cybersecurity.json --output ./results
+```
+
+#### Run PDF Report Example
+```bash
+python main.py --input tests/test_data/sample_report.pdf --output ./results
+```
+
+#### Run Healthcare/User Example (CSV)
 ```bash
 python main.py --input tests/test_data/sample_users.csv
 ```

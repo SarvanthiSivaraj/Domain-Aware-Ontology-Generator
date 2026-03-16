@@ -6,6 +6,9 @@ pandas>=2.0.0
 # Additional utilities
 openpyxl>=3.1.0  # For Excel support (optional)
 chardet>=5.0.0   # For better encoding detection
+pymupdf>=1.23.0  # For PDF parsing
+google-genai>=0.1.0  # For Gemini API
+python-dotenv>=1.0.0 # For environment variables
 
 # Development and Testing
 pytest>=7.4.0

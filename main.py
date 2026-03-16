@@ -1,4 +1,12 @@
 import sys
+import io
+import os
+import glob
+
+# Ensure UTF-8 output even when redirected or on systems with non-UTF8 defaults
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
 import argparse
 from src.core.validator import FileValidator
 from src.core.detector import FormatDetector, FileFormat
@@ -12,9 +20,19 @@ from src.analyzers.relationship_detector import RelationshipDetector
 from src.ontology_builder.ontology_builder import OntologyBuilder
 from src.ontology_builder.individual_generator import IndividualGenerator
 from src.ontology_builder.owl_exporter import OWLExporter
+from src.core.llm_service import LLMService
 
-def run_pipeline(file_path: str):
-    print(f"\n--- Phase 1: Core Foundation ---")
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv()
+
+def run_pipeline(file_path: str, output_base: str = "output", llm_service: LLMService = None):
+    """Runs the 12-step pipeline for a single file."""
+    print(f"\n{'='*20}")
+    print(f"PROCESSING: {file_path}")
+    print(f"{'= '*10}\n")
+    
+    print(f"--- Phase 1: Core Foundation ---")
     
     # Step 1: File Validation
     print(f"[1/12] Validating file: {file_path}")
@@ -77,7 +95,7 @@ def run_pipeline(file_path: str):
     print(f"\n--- Phase 4: Semantic Inference ---")
     # Step 7: Entity Identification
     print(f"[7/12] Identifying entities...")
-    identifier = EntityIdentifier(domain_config)
+    identifier = EntityIdentifier(domain_config, llm_service=llm_service)
     entities = identifier.identify(parsed_data)
     
     for ent_name, info in entities.items():
@@ -99,7 +117,7 @@ def run_pipeline(file_path: str):
     # Step 9: Relationship Detection
     print(f"[9/12] Detecting relationships...")
     rel_detector = RelationshipDetector()
-    relationships = rel_detector.detect(entities, domain_config, parsed_data)
+    relationships = rel_detector.detect(entities, domain_config, parsed_data, llm_service=llm_service)
 
     for rel in relationships:
         print(f"✅ {rel['source']} --{rel['property_name']}--> {rel['target']} (via: {rel['via_field']}, method: {rel['detection_method']})")
@@ -136,32 +154,78 @@ def run_pipeline(file_path: str):
 
     # Step 12: OWL File Generation
     print(f"[12/12] Exporting OWL file...")
-    exporter = OWLExporter()
-    output_path = exporter.export(ontology, domain_config.name)
+    exporter = OWLExporter(output_base_dir=output_base)
+    output_path = exporter.export(ontology, domain_config.name, source_filename=file_path)
     print(f"✅ OWL file saved to: {output_path}")
 
     return parsed_data, domain_config, entities, attributes, relationships, ontology, builder, generator, output_path
 
+def process_directory(input_dir: str, output_base: str, llm_service: LLMService):
+    """Processes all supported files in a directory."""
+    print(f"\n🏗️ Scanning input directory: {input_dir}")
+    
+    # Supported extensions
+    extensions = ['*.json', '*.csv', '*.pdf']
+    files_to_process = []
+    
+    for ext in extensions:
+        files_to_process.extend(glob.glob(os.path.join(input_dir, ext)))
+        
+    if not files_to_process:
+        print(f"ℹ️ No supported files found in {input_dir}")
+        return
+        
+    print(f"📂 Found {len(files_to_process)} files to process.")
+    
+    success_count = 0
+    for file_path in files_to_process:
+        try:
+            result = run_pipeline(file_path, output_base, llm_service)
+            if result:
+                success_count += 1
+        except Exception as e:
+            print(f"❌ Unexpected error processing {file_path}: {str(e)}")
+            
+    print(f"\n{'='*40}")
+    print(f"BATCH PROCESSING COMPLETE")
+    print(f"Successfully processed: {success_count}/{len(files_to_process)} files")
+    print(f"{'='*40}\n")
+
 def main():
-    parser = argparse.ArgumentParser(description="Multi-Domain Aware OWL Ontology Generator")
-    parser.add_argument("--input", "-i", required=True, help="Path to input dataset (JSON/CSV)")
+    parser = argparse.ArgumentParser(
+        description="Multi-Domain Aware OWL Ontology Generator",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Supported formats:
+  - PDF: Unstructured reports (requires Gemini API for best results)
+  - JSON: Structured logs or data collections
+  - CSV: Tabular datasets
+
+Usage Modes:
+  1. Single File: python main.py --input data.pdf --output ./results
+  2. Directory:   python main.py --dir ./input_folder --output ./results
+        """
+    )
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--input", "-i", help="Path to a single input dataset")
+    group.add_argument("--dir", "-d", help="Path to a directory containing multiple datasets")
+    
+    parser.add_argument("--output", "-o", default="output", help="Base directory for generated ontologies (default: output)")
+    
     args = parser.parse_args()
     
-    result = run_pipeline(args.input)
-    if result:
-        parsed_data, domain_config, entities, attributes, relationships, ontology, builder, generator, output_path = result
-        print(f"\n{parsed_data.summary()}")
-        print(f"\nActive Domain: {domain_config.name}")
-        print(f"Identified Entities: {', '.join(entities.keys())}")
-        total_attrs = sum(len(a['attributes']) for a in attributes.values())
-        print(f"Classified Attributes: {total_attrs} data properties across {len(attributes)} entities")
-        print(f"Detected Relationships: {len(relationships)} object properties")
-        summary = builder.get_summary()
-        print(f"Ontology: {len(summary['classes'])} classes, {len(summary['data_properties'])} data props, {len(summary['object_properties'])} object props")
-        total_inds = sum(generator.stats.values()) if generator.stats else 0
-        print(f"Individuals: {total_inds} instances created")
-        print(f"Output: {output_path}")
-        print("\n\u2705 All 12 Steps Complete! Pipeline finished successfully.")
+    # Initialize LLM Service once for all runs
+    print(f"\n--- Phase 0: Service Initialization ---")
+    llm_service = LLMService()
+    if llm_service.is_available():
+        print("✅ Gemini API service initialized.")
+    else:
+        print("ℹ️ Running without Gemini API (LLM features disabled).")
+    
+    if args.input:
+        run_pipeline(args.input, output_base=args.output, llm_service=llm_service)
+    elif args.dir:
+        process_directory(args.dir, args.output, llm_service)
 
 if __name__ == "__main__":
     main()

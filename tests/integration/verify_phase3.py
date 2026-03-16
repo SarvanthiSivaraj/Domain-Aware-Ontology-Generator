@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from src.parsers.json_parser import JSONParser
 from src.parsers.csv_parser import CSVParser
@@ -8,7 +8,7 @@ from src.parsers.csv_parser import CSVParser
 def verify():
     print("Verifying JSON Schema Analysis...")
     json_parser = JSONParser()
-    json_data = json_parser.parse("tests/test_data/sample_cybersecurity.json")
+    json_data = json_parser.parse(os.path.join(os.path.dirname(__file__), "../data/sample_cybersecurity.json"))
     
     # Check for identifiers
     id_fields = [f for f, m in json_data.field_metadata.items() if m.is_identifier]
@@ -20,7 +20,7 @@ def verify():
     
     print("\nVerifying CSV Schema Analysis...")
     csv_parser = CSVParser()
-    csv_data = csv_parser.parse("tests/test_data/sample_users.csv")
+    csv_data = csv_parser.parse(os.path.join(os.path.dirname(__file__), "../data/sample_users.csv"))
     
     # Check for identifiers
     id_fields = [f for f, m in csv_data.field_metadata.items() if m.is_identifier]

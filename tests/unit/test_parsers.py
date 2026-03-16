@@ -10,12 +10,12 @@ import os
 import json
 
 # Add parent directory to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from src.parsers.json_parser import JSONParser
 from src.parsers.csv_parser import CSVParser
 from src.parsers.parser_factory import create_parser
-from src.core.data_validator import FileFormat
+from src.core.detector import FileFormat
 from src.utils.type_detector import DataType
 
 
@@ -25,7 +25,7 @@ class TestJSONParser(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures"""
         self.parser = JSONParser()
-        self.test_data_dir = os.path.join(os.path.dirname(__file__), 'test_data')
+        self.test_data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data'))
         self.json_file = os.path.join(self.test_data_dir, 'sample_cybersecurity.json')
     
     def test_parse_json_file(self):
@@ -110,7 +110,7 @@ class TestCSVParser(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures"""
         self.parser = CSVParser()
-        self.test_data_dir = os.path.join(os.path.dirname(__file__), 'test_data')
+        self.test_data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data'))
         self.csv_file = os.path.join(self.test_data_dir, 'sample_users.csv')
     
     def test_parse_csv_file(self):
@@ -188,7 +188,7 @@ class TestParsedData(unittest.TestCase):
     
     def setUp(self):
         """Set up test fixtures"""
-        self.test_data_dir = os.path.join(os.path.dirname(__file__), 'test_data')
+        self.test_data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data'))
         self.csv_file = os.path.join(self.test_data_dir, 'sample_users.csv')
     
     def test_parsed_data_methods(self):
